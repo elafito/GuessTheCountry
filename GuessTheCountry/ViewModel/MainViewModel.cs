@@ -11,7 +11,7 @@ namespace GuessTheCountry.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
+        private readonly ICountryService _dataService;
 
         /// <summary>
         /// The <see cref="WelcomeTitle" /> property's name.
@@ -46,10 +46,10 @@ namespace GuessTheCountry.ViewModel
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(IDataService dataService)
+        public MainViewModel(ICountryService dataService)
         {
             _dataService = dataService;
-            _dataService.GetData(
+            _dataService.GetCountryName(
                 (item, error) =>
                 {
                     if (error != null)
@@ -58,7 +58,7 @@ namespace GuessTheCountry.ViewModel
                         return;
                     }
 
-                    WelcomeTitle = item.Title;
+                   // WelcomeTitle = item.Title;
                 });
         }
 

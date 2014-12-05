@@ -5,14 +5,14 @@ using System.Text;
 
 namespace GuessTheCountry.Model
 {
-    public class DataItem
+    public class Country
     {
-        public DataItem(string title)
+        public Country(string countryName)
         {
-            Title = title;
+            CountryName = countryName;
         }
 
-        public string Title
+        public string CountryName
         {
             get;
             private set;

@@ -5,8 +5,8 @@ using System.Text;
 
 namespace GuessTheCountry.Model
 {
-    public interface IDataService
+    public interface ICountryService
     {
-        void GetData(Action<DataItem, Exception> callback);
+        void GetCountryName(Action<Country, Exception> callback);
     }
 }
