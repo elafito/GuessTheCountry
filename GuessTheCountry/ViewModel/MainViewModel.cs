@@ -1,5 +1,7 @@
-﻿using GalaSoft.MvvmLight;
+﻿using BingMapsRESTService.Common.JSON;
+using GalaSoft.MvvmLight;
 using GuessTheCountry.Model;
+using System;
 
 namespace GuessTheCountry.ViewModel
 {
@@ -18,27 +20,27 @@ namespace GuessTheCountry.ViewModel
         /// </summary>
         public const string WelcomeTitlePropertyName = "WelcomeTitle";
 
-        private string _welcomeTitle = string.Empty;
+        private string _countryName = string.Empty;
 
         /// <summary>
-        /// Gets the WelcomeTitle property.
+        /// Gets the CountryName property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string WelcomeTitle
+        public string CountryName
         {
             get
             {
-                return _welcomeTitle;
+                return _countryName;
             }
 
             set
             {
-                if (_welcomeTitle == value)
+                if (_countryName == value)
                 {
                     return;
                 }
 
-                _welcomeTitle = value;
+                _countryName = value;
                 RaisePropertyChanged(WelcomeTitlePropertyName);
             }
         }
@@ -49,24 +51,17 @@ namespace GuessTheCountry.ViewModel
         public MainViewModel(ICountryService dataService)
         {
             _dataService = dataService;
-            _dataService.GetCountryName(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
 
-                   // WelcomeTitle = item.Title;
-                });
+            string key = "At5gCPjlFX3X3_9vHk-_dCFUqFps-IKZMyh_mb7Al1CyS0fgzFRsETMF0S2Or6ou";
+            string query = "47.64054,-122.12934";
+
+            Uri geocodeRequest = new Uri(string.Format("http://dev.virtualearth.net/REST/v1/Locations/{0}?key={1}", query, key));
+
+            _dataService.GetResponse(geocodeRequest, (x) =>
+            {
+                CountryName = ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion;;
+            });
         }
 
-        ////public override void Cleanup()
-        ////{
-        ////    // Clean up if needed
-
-        ////    base.Cleanup();
-        ////}
     }
 }

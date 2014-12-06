@@ -1,12 +1,14 @@
-﻿using System;
+﻿using BingMapsRESTService.Common.JSON;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GuessTheCountry.Model
 {
     public interface ICountryService
     {
-        void GetCountryName(Action<Country, Exception> callback);
+        void GetResponse(Uri uri, Action<Response> callback);
     }
 }
