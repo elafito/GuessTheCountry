@@ -6,6 +6,7 @@
                             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                             xmlns:ignore="http://www.ignore.com"
+                            xmlns:toolkit="clr-namespace:Microsoft.Phone.Maps.Toolkit;assembly=Microsoft.Phone.Controls.Toolkit"
                             mc:Ignorable="d ignore"
                             FontFamily="{StaticResource PhoneFontFamilyNormal}"
                             FontSize="{StaticResource PhoneFontSizeNormal}"
@@ -46,10 +47,10 @@
         <StackPanel x:Name="TitlePanel"
                     Grid.Row="0"
                     Margin="12,17,0,28">
-            <TextBlock Text="MY APPLICATION"
+            <!--<TextBlock Text="MY APPLICATION"
                        Style="{StaticResource PhoneTextNormalStyle}"
-                       Margin="12,0" />
-            <TextBlock Text="page name"
+                       Margin="12,0" />-->
+            <TextBlock Text="{Binding Status, Mode=TwoWay}"
                        Margin="9,-7,0,0"
                        Style="{StaticResource PhoneTextTitle1Style}" />
         </StackPanel>
@@ -59,16 +60,24 @@
               Grid.Row="1"
               Margin="12,0,12,0">
             <StackPanel Grid.Row="2">
-                <Controls:Map Name="MyMap" Grid.Row="2" Height="534" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBox Width="334"/>
-                    <Button Width="119">
+
+
+                <Controls:Map Background="White" Name="MyMap" Grid.Row="2" Height="534">
+                    <toolkit:MapExtensions.Children>
+                        <toolkit:Pushpin GeoCoordinate="{Binding Coordinate}" Background="Red"/>
+                    </toolkit:MapExtensions.Children>
+                </Controls:Map>
+                
+                    <StackPanel Orientation="Horizontal">
+                    <TextBox Text="{Binding Answer, Mode=TwoWay}" Width="334"/>
+                    <Button Command="{Binding SendAnswer, Mode=TwoWay}" Width="119">
                         <TextBlock Text="{Binding Path=LocalizedResources.SendButton, Source={StaticResource LocalizedStrings}}"></TextBlock>
                     </Button>
                 </StackPanel>
             </StackPanel>
+        
         </Grid>
-
+        
         <!--Uncomment to see an alignment grid to help ensure your controls are
             aligned on common boundaries.  The image has a top margin of -32px to
             account for the System Tray. Set this to 0 (or remove the margin altogether)

@@ -9,10 +9,13 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using GuessTheCountry.Resources;
 
+
 namespace GuessTheCountry
 {
     public partial class MainPage : PhoneApplicationPage
     {
+
+
         // Constructor
         public MainPage()
         {
@@ -20,7 +23,10 @@ namespace GuessTheCountry
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
+
+           // MyViewModelCommand = new ActionCommand(DoSomething);
         }
+
 
         // Sample code for building a localized ApplicationBar
         //private void BuildLocalizedApplicationBar()
