@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Devices.Geolocation;
 
 namespace GuessTheCountry.Model
 {
-    public interface ICountryService
+    public interface IResponseService
     {
-        void GetResponse(Uri uri, Action<Response> callback);
+        void GetCountryName(double latitude, double longitude, Action<Response> callback);
     }
 }
