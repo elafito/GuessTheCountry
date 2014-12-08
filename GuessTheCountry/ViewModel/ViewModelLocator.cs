@@ -31,11 +31,11 @@ namespace GuessTheCountry.ViewModel
 
             if (ViewModelBase.IsInDesignModeStatic)
             {
-                SimpleIoc.Default.Register<ICountryService, Design.DesignDataService>();
+                SimpleIoc.Default.Register<IResponseService, Design.DesignDataService>();
             }
             else
             {
-                SimpleIoc.Default.Register<ICountryService, CountryService>();
+                SimpleIoc.Default.Register<IResponseService, ResponseService>();
             }
 
             SimpleIoc.Default.Register<MainViewModel>();

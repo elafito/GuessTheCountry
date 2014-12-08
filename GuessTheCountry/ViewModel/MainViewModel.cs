@@ -3,11 +3,12 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GuessTheCountry.Model;
 using System;
-using System.Device.Location;
+using Windows.Devices.Geolocation;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Device.Location;
 
 namespace GuessTheCountry.ViewModel
 {
@@ -19,41 +20,33 @@ namespace GuessTheCountry.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
+        #region private variables
+
+        //Set minimum and maximum values for latitude
         private const int minLatitude = -90;
         private const int maxLatitude = 90;
 
+        //Set minimum and maximum values for longitude
         private const int minLongitude = -180;
         private const int maxLongitude = 180;
 
-
-        private readonly ICountryService _dataService;
-        private ICommand sendAnswer;
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
-
-        private string answer;
-
-
-
+        private readonly IResponseService dataService;
         private GeoCoordinate coordinate;
+        private ICommand sendAnswer;
+        private string answer;
+        private string status;
+        private string countryName = string.Empty;
+
+        #endregion
+
+        #region public properties
 
         public GeoCoordinate Coordinate
         {
             get { return coordinate; }
-            set { 
-                
-                coordinate = value;
-
-
-            RaisePropertyChanged("Coordinate");
-            
+            set { coordinate = value; RaisePropertyChanged("Coordinate");        
             }
-        }
-
-        private readonly GeoCoordinate seattleGeoCoordinate = new GeoCoordinate(47.60097, -122.3331);
-     
+        }   
 
         public string Answer
         {
@@ -61,15 +54,69 @@ namespace GuessTheCountry.ViewModel
             set { answer = value; }
         }
 
-        private string status;
-
         public string Status
         {
             get { return status; }
             set { status = value; RaisePropertyChanged("Status");}
         }
 
-        private string countryName = string.Empty;
+        #endregion
+
+        private void CheckAnswer(string answer)
+        {
+            if (answer.ToUpper().Trim() == countryName.ToUpper().Trim())
+            {
+                Status = "Correct!";
+                Status = "Searching for location...";
+                getCountryNameFromRandomCoordinates();
+            }
+            else
+            {
+                Status = "Incorrect!";
+            }
+        }
+
+        #region private methods
+
+        /// <summary>
+        /// Get country name from the random coordinates
+        /// </summary>
+        private void getCountryNameFromRandomCoordinates()
+        {
+            //Get random values
+            Coordinate = getRandomCoordinates();
+
+            //Ask for country name
+            dataService.GetCountryName(coordinate.Latitude, coordinate.Longitude, (x) =>
+            {
+                //If there is a value for country name, set the property value CountryName.
+                if (x.ResourceSets[0].Resources.Length > 0)
+                {
+                    CountryName = ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion;
+                    Status = "Guess!";
+                }
+                else //If there is no country name (pushpin ended in the sea), search again
+                {
+                    getCountryNameFromRandomCoordinates();
+                }
+            });
+        }
+
+        /// <summary>
+        /// Get Random Coordinates having on count defined min and max values.
+        /// </summary>
+        /// <returns>Random coordinates</returns>
+        private GeoCoordinate getRandomCoordinates()
+        {
+            double latitude = Utils.GetRandomNumber(minLatitude, maxLatitude);
+            double longitude = Utils.GetRandomNumber(minLongitude, maxLongitude);
+
+            return new GeoCoordinate(latitude, longitude);
+        }
+
+        #endregion
+
+        #region public methods
 
         /// <summary>
         /// Gets the CountryName property.
@@ -91,81 +138,31 @@ namespace GuessTheCountry.ViewModel
 
                 countryName = value;
 
-                RaisePropertyChanged(WelcomeTitlePropertyName);
+                //RaisePropertyChanged(WelcomeTitlePropertyName);
             }
         }
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(ICountryService dataService)
+        public MainViewModel(IResponseService dataService)
         {
-            _dataService = dataService;
+            this.dataService = dataService;
 
-            setGeoCoordinate();
+            getCountryNameFromRandomCoordinates();
 
             Status = "Searching for location...";
-
         }
-
-        private ICommand _addNumberCommand;
-
         public ICommand SendAnswer
         {
             get
             {
-                if (_addNumberCommand == null)
-                    _addNumberCommand = new RelayCommand<string>(i => CheckAnswer(answer));
-                return _addNumberCommand;
+                if (sendAnswer == null)
+                    sendAnswer = new RelayCommand<string>(i => CheckAnswer(answer));
+                return sendAnswer;
             }
         }
 
-        public void CheckAnswer(string answer)
-        {
-            if (answer.ToUpper() == countryName.ToUpper())
-            {
-                Status = "Correct!";
-                Status = "Searching for location...";
-                setGeoCoordinate();
-            }
-            else
-            {
-                Status = "Incorrect!";
-            }
-        }
-
-        private GeoCoordinate getRandomCoordinates()
-        {
-            double latitude = Utils.GetRandomNumber(minLatitude, maxLatitude);
-            double longitude = Utils.GetRandomNumber(minLongitude, maxLongitude);
-
-            return new GeoCoordinate(latitude, longitude);
-        }
-
-        private void setGeoCoordinate()
-
-        {
-            string key = "At5gCPjlFX3X3_9vHk-_dCFUqFps-IKZMyh_mb7Al1CyS0fgzFRsETMF0S2Or6ou";
-
-            Coordinate = getRandomCoordinates();
-
-            Uri geocodeRequest = new Uri(string.Format("http://dev.virtualearth.net/REST/v1/Locations/{0},{1}?key={2}", Coordinate.Latitude, Coordinate.Longitude, key));
-
-            _dataService.GetResponse(geocodeRequest, (x) =>
-            {
-                if (x.ResourceSets[0].Resources.Length > 0)
-                {
-                    CountryName = ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion;
-                    Status = "Guess!";
-                }
-                else
-                {
-                    setGeoCoordinate();
-                }
-
-            });
-
-        }
-
+        #endregion
     }
 }
