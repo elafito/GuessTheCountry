@@ -61,18 +61,20 @@
               Margin="12,0,12,0">
             <StackPanel Grid.Row="2">
 
-
-                <Controls:Map Background="White" Name="MyMap" Grid.Row="2" Height="534">
+                <ProgressBar Visibility="{Binding BarVisibility}" Height="10" Width="Auto" IsIndeterminate="True"/>
+                
+                <Controls:Map IsEnabled="{Binding AppIsEnabled}" Center="{Binding MapCenterCoordinate, Mode=TwoWay}" Background="White" Name="MyMap" Grid.Row="2" Height="534" CartographicMode="Aerial" ZoomLevel="3"  >
                     <toolkit:MapExtensions.Children>
-                        <toolkit:Pushpin GeoCoordinate="{Binding Coordinate}" Background="Red"/>
+                        <toolkit:Pushpin GeoCoordinate="{Binding PushPinCoordinate}" IsEnabled="{Binding AppIsEnabled}" Background="Red"/>
                     </toolkit:MapExtensions.Children>
                 </Controls:Map>
                 
                     <StackPanel Orientation="Horizontal">
-                    <TextBox Text="{Binding Answer, Mode=TwoWay}" Width="334"/>
-                    <Button Command="{Binding SendAnswer, Mode=TwoWay}" Width="119">
+                    <TextBox Text="{Binding Answer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="334"/>
+                    <Button Command="{Binding SendAnswer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="119">
                         <TextBlock Text="{Binding Path=LocalizedResources.SendButton, Source={StaticResource LocalizedStrings}}"></TextBlock>
                     </Button>
+                    
                 </StackPanel>
             </StackPanel>
         

@@ -36,6 +36,7 @@ namespace GuessTheCountry.Model
             Uri geocodeRequest = new Uri(string.Format(url,latitude, longitude, key));
 
             WebClient wc = new WebClient();
+
             wc.OpenReadCompleted += (o, a) =>
             {
                 if (callback != null)

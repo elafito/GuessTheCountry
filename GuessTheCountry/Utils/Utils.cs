@@ -6,20 +6,21 @@ using System.Threading.Tasks;
 
 namespace GuessTheCountry
 {
+    /// <summary>
+    /// Utilities class
+    /// </summary>
     public static class Utils
     {
+        /// <summary>
+        /// Get random number
+        /// </summary>
+        /// <param name="minimum">Minimun value for the random number</param>
+        /// <param name="maximum">Maximum value for the random number</param>
+        /// <returns>Random double number</returns>
         public static double GetRandomNumber(double minimum, double maximum)
         {
-            Random random = new Random((int)DateTime.Now.Ticks);
+            Random random = new Random(Guid.NewGuid().GetHashCode());
             return random.NextDouble() * (maximum - minimum) + minimum;
         }
-
-
-        //public static async Task<bool> OnTimerTick()
-        //{
-        //    TimeSpan counter = new TimeSpan(0, 0, 3);
-        //    counter -= TimeSpan.FromSeconds(1);    
-        //    return true;
-        //}
     }
 }

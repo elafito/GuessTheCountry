@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Device.Location;
+using System.Windows.Threading;
+using System.Windows;
 
 namespace GuessTheCountry.ViewModel
 {
@@ -31,50 +33,176 @@ namespace GuessTheCountry.ViewModel
         private const int maxLongitude = 180;
 
         private readonly IResponseService dataService;
-        private GeoCoordinate coordinate;
+        private GeoCoordinate pushPinCoordinate;
+        private GeoCoordinate mapCenterCoordinate;
         private ICommand sendAnswer;
         private string answer;
         private string status;
         private string countryName = string.Empty;
+        private DispatcherTimer dispatcherTimer;
+        private bool appIsEnabled = true;
+        private Visibility barVisibility;
 
         #endregion
 
         #region public properties
 
-        public GeoCoordinate Coordinate
+        /// <summary>
+        /// Coordinates for the map pushpin
+        /// </summary>
+        public GeoCoordinate PushPinCoordinate
         {
-            get { return coordinate; }
-            set { coordinate = value; RaisePropertyChanged("Coordinate");        
+            get { return pushPinCoordinate; }
+            set
+            {
+                pushPinCoordinate = value; RaisePropertyChanged("PushPinCoordinate");        
+            }
+        }
+
+        /// <summary>
+        /// Coordinates for the map center
+        /// </summary>
+        public GeoCoordinate MapCenterCoordinate
+        {
+            get { return mapCenterCoordinate; }
+            set
+            {
+                mapCenterCoordinate = value; RaisePropertyChanged("MapCenterCoordinate");
             }
         }   
 
+        /// <summary>
+        /// User answer
+        /// </summary>
         public string Answer
         {
             get { return answer; }
-            set { answer = value; }
+            set { answer = value; RaisePropertyChanged("Answer"); }
         }
 
+        /// <summary>
+        /// Status message
+        /// </summary>
         public string Status
         {
             get { return status; }
             set { status = value; RaisePropertyChanged("Status");}
         }
 
-        #endregion
-
-        private void CheckAnswer(string answer)
+        /// <summary>
+        /// Enable/Disable UI elements
+        /// </summary>
+        public bool AppIsEnabled
         {
-            if (answer.ToUpper().Trim() == countryName.ToUpper().Trim())
+            get { return appIsEnabled; }
+            set { appIsEnabled = value; RaisePropertyChanged("AppIsEnabled");}
+        }
+
+        /// <summary>
+        /// Show/Hide progressbar
+        /// </summary>
+        public Visibility BarVisibility
+        {
+            get { return barVisibility; }
+            set { barVisibility = value; ; RaisePropertyChanged("BarVisibility"); }
+        }
+
+        /// <summary>
+        /// Country name of pushpin location
+        /// </summary>
+        public string CountryName
+        {
+            get
             {
-                Status = "Correct!";
-                Status = "Searching for location...";
-                getCountryNameFromRandomCoordinates();
+                return countryName;
             }
-            else
+
+            set
             {
-                Status = "Incorrect!";
+                if (countryName == value)
+                {
+                    return;
+                }
+
+                countryName = value;
             }
         }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the CountryName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        private void CheckAnswer(string answer)
+        {
+            try
+            {
+                // If answer is correct search for new location
+                if (answer.ToUpper().Trim() == countryName.ToUpper().Trim())
+                {
+                    Status = "Correct!";
+                    AppIsEnabled = false;
+                    dispatcherTimer = new DispatcherTimer();
+                    dispatcherTimer.Interval = TimeSpan.FromMilliseconds(2000);
+                    dispatcherTimer.Tick += (s, e) =>
+                        {
+                            dispatcherTimer.Stop();
+                            getCountryNameFromRandomCoordinates();
+                            searchMode(true);
+                        };
+                    dispatcherTimer.Start();
+                }
+                else
+                {
+                    Status = "Incorrect!";
+                }
+            }
+            catch (Exception)
+            {
+                //TODO LOG ERROR AND/OR SEND TO DEVELOPER 
+            }
+        }
+
+        #region public methods
+
+        /// <summary>
+        /// Initializes a new instance of the MainViewModel class.
+        /// </summary>
+        public MainViewModel(IResponseService dataService)
+        {
+            try
+            {
+                this.dataService = dataService;
+                searchMode(true);
+                MapCenterCoordinate = new GeoCoordinate(Utils.GetRandomNumber(minLatitude, maxLatitude), Utils.GetRandomNumber(minLongitude, maxLongitude));
+                getCountryNameFromRandomCoordinates();
+
+            }
+            catch (Exception)
+            {
+                //TODO LOG ERROR AND/OR SEND TO DEVELOPER 
+            }
+        }
+
+        /// <summary>
+        /// Checks answer
+        /// </summary>
+        public ICommand SendAnswer
+        {
+            get
+            {
+                if (sendAnswer == null)
+                {
+                    //Check if answer is correct
+                    sendAnswer = new RelayCommand<string>(i => CheckAnswer(answer));
+                }
+
+                return sendAnswer;
+            }
+        }
+
+        #endregion
 
         #region private methods
 
@@ -84,16 +212,19 @@ namespace GuessTheCountry.ViewModel
         private void getCountryNameFromRandomCoordinates()
         {
             //Get random values
-            Coordinate = getRandomCoordinates();
+            PushPinCoordinate = getRandomCoordinates();
 
             //Ask for country name
-            dataService.GetCountryName(coordinate.Latitude, coordinate.Longitude, (x) =>
+            dataService.GetCountryName(pushPinCoordinate.Latitude, pushPinCoordinate.Longitude, (x) =>
             {
                 //If there is a value for country name, set the property value CountryName.
-                if (x.ResourceSets[0].Resources.Length > 0)
+                if (x.ResourceSets[0].Resources.Length > 0 &&
+                    ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion != String.Empty)
                 {
+                    MapCenterCoordinate = PushPinCoordinate;
                     CountryName = ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion;
-                    Status = "Guess!";
+                    searchMode(false);
+
                 }
                 else //If there is no country name (pushpin ended in the sea), search again
                 {
@@ -114,52 +245,24 @@ namespace GuessTheCountry.ViewModel
             return new GeoCoordinate(latitude, longitude);
         }
 
-        #endregion
-
-        #region public methods
-
         /// <summary>
-        /// Gets the CountryName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
+        /// Make changes in the UI depending if the app is searching for a new location
         /// </summary>
-        public string CountryName
+        /// <param name="activate">Activate/Deactivate search mode</param>
+        private void searchMode (bool activate)
         {
-            get
+            if (activate)
             {
-                return countryName;
+                Status = "Searching...";
+                AppIsEnabled = false;
+                BarVisibility = Visibility.Visible;
             }
-
-            set
+            else
             {
-                if (countryName == value)
-                {
-                    return;
-                }
-
-                countryName = value;
-
-                //RaisePropertyChanged(WelcomeTitlePropertyName);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
-        /// </summary>
-        public MainViewModel(IResponseService dataService)
-        {
-            this.dataService = dataService;
-
-            getCountryNameFromRandomCoordinates();
-
-            Status = "Searching for location...";
-        }
-        public ICommand SendAnswer
-        {
-            get
-            {
-                if (sendAnswer == null)
-                    sendAnswer = new RelayCommand<string>(i => CheckAnswer(answer));
-                return sendAnswer;
+                Status = "Guess!";
+                AppIsEnabled = true;
+                Answer = string.Empty;
+                BarVisibility = Visibility.Collapsed;
             }
         }
 
