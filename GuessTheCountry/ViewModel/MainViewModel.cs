@@ -215,14 +215,13 @@ namespace GuessTheCountry.ViewModel
             PushPinCoordinate = getRandomCoordinates();
 
             //Ask for country name
-            dataService.GetCountryName(pushPinCoordinate.Latitude, pushPinCoordinate.Longitude, (x) =>
+            dataService.GetCountryName(pushPinCoordinate.Latitude, pushPinCoordinate.Longitude, (countryNameResponse) =>
             {
                 //If there is a value for country name, set the property value CountryName.
-                if (x.ResourceSets[0].Resources.Length > 0 &&
-                    ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion != String.Empty)
+                if (countryNameResponse != String.Empty)
                 {
                     MapCenterCoordinate = PushPinCoordinate;
-                    CountryName = ((Location)x.ResourceSets[0].Resources[0]).Address.CountryRegion;
+                    CountryName = countryNameResponse;
                     searchMode(false);
 
                 }

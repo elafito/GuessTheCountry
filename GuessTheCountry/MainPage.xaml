@@ -70,11 +70,13 @@
                 </Controls:Map>
                 
                     <StackPanel Orientation="Horizontal">
-                    <TextBox Text="{Binding Answer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="334"/>
-                    <Button Command="{Binding SendAnswer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="119">
-                        <TextBlock Text="{Binding Path=LocalizedResources.SendButton, Source={StaticResource LocalizedStrings}}"></TextBlock>
+                    <TextBox Text="{Binding Answer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="356" InputScope="Maps" AcceptsReturn="False" >
+                      
+                    </TextBox>
+                    <Button Command="{Binding SendAnswer, Mode=TwoWay}" IsEnabled="{Binding AppIsEnabled}" Width="104">
+                        <TextBlock Text="{Binding LocalizedResources.SendButton, Source={StaticResource LocalizedStrings}}"/>
                     </Button>
-                    
+
                 </StackPanel>
             </StackPanel>
         

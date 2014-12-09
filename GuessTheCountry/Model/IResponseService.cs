@@ -10,6 +10,6 @@ namespace GuessTheCountry.Model
 {
     public interface IResponseService
     {
-        void GetCountryName(double latitude, double longitude, Action<Response> callback);
+        void GetCountryName(double latitude, double longitude, Action<string> callback);
     }
 }

@@ -30,8 +30,9 @@ namespace GuessTheCountry.Model
         /// <param name="latitude">Latitude</param>
         /// <param name="longitude">Longitude</param>
         /// <param name="callback">Callback</param>
-        public void GetCountryName(double latitude, double longitude, Action<Response> callback)
+        public void GetCountryName(double latitude, double longitude, Action<string> callback)
         {
+            string countryName = string.Empty;
             // Build URI for the REST Service
             Uri geocodeRequest = new Uri(string.Format(url,latitude, longitude, key));
 
@@ -42,7 +43,19 @@ namespace GuessTheCountry.Model
                 if (callback != null)
                 {
                     DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(Response));
-                    callback(ser.ReadObject(a.Result) as Response);
+
+                    var response = ser.ReadObject(a.Result) as Response;
+
+                    if (response.ResourceSets[0].Resources.Length > 0)
+	                {
+		                countryName = ((Location)response.ResourceSets[0].Resources[0]).Address.CountryRegion;
+	                }
+                    else
+                    {
+                        countryName = string.Empty;
+                    }
+
+                    callback(countryName);
                 }
             };
 

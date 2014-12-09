@@ -10,7 +10,7 @@ namespace GuessTheCountry.Design
     public class DesignDataService : IResponseService
     {
 
-        public void GetCountryName(double latitude, double longitude, Action<Response> callback)
+        public void GetCountryName(double latitude, double longitude, Action<string> callback)
         {
             throw new NotImplementedException();
         }
